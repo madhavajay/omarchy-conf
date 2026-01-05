@@ -83,6 +83,10 @@ if command -v chezmoi &> /dev/null; then
     run_user mkdir -p "$RUN_HOME/.config/hypr"
     run_user cp "$SCRIPT_DIR/configs/hypr/bindings.conf" "$RUN_HOME/.config/hypr/bindings.conf"
     run_user cp "$SCRIPT_DIR/configs/hypr/input.conf" "$RUN_HOME/.config/hypr/input.conf"
+
+    # Apply Ghostty config directly for immediate effect.
+    run_user mkdir -p "$RUN_HOME/.config/ghostty"
+    run_user cp "$SCRIPT_DIR/configs/ghostty/config" "$RUN_HOME/.config/ghostty/config"
 else
     warn "chezmoi not installed; skipping dotfiles apply"
 fi

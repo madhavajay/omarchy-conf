@@ -1,0 +1,146 @@
+#!/bin/bash
+# Magnet-style window snapping for Hyprland
+# Usage: omarchy-hyprland-snap <position>
+# Positions: left, right, top, bottom, topleft, topright, bottomleft, bottomright, center, maximize, restore
+
+position="$1"
+gap=10  # Gap from edges
+
+# Get active window and monitor info
+active_window=$(hyprctl activewindow -j)
+monitor_id=$(echo "$active_window" | jq -r '.monitor')
+monitor_info=$(hyprctl monitors -j | jq -r ".[] | select(.id == $monitor_id)")
+
+# Get monitor dimensions and position
+mon_x=$(echo "$monitor_info" | jq -r '.x')
+mon_y=$(echo "$monitor_info" | jq -r '.y')
+mon_width=$(echo "$monitor_info" | jq -r '.width')
+mon_height=$(echo "$monitor_info" | jq -r '.height')
+scale=$(echo "$monitor_info" | jq -r '.scale')
+
+# Account for scaling (using awk for float division)
+mon_width=$(awk "BEGIN {printf \"%.0f\", $mon_width / $scale}")
+mon_height=$(awk "BEGIN {printf \"%.0f\", $mon_height / $scale}")
+
+# Reserve space for bar (adjust if needed)
+bar_height=33
+work_y=$((mon_y + bar_height))
+work_height=$((mon_height - bar_height))
+
+# Calculate dimensions
+half_width=$(( (mon_width - gap * 3) / 2 ))
+half_height=$(( (work_height - gap * 3) / 2 ))
+third_width=$(( (mon_width - gap * 4) / 3 ))
+two_third_width=$(( (mon_width - gap * 3) * 2 / 3 ))
+full_width=$((mon_width - gap * 2))
+full_height=$((work_height - gap * 2))
+
+# Ensure window is floating
+hyprctl dispatch setfloating
+
+case "$position" in
+    left)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$half_width
+        h=$full_height
+        ;;
+    right)
+        x=$((mon_x + gap * 2 + half_width))
+        y=$((work_y + gap))
+        w=$half_width
+        h=$full_height
+        ;;
+    top)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$full_width
+        h=$half_height
+        ;;
+    bottom)
+        x=$((mon_x + gap))
+        y=$((work_y + gap * 2 + half_height))
+        w=$full_width
+        h=$half_height
+        ;;
+    topleft)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$half_width
+        h=$half_height
+        ;;
+    topright)
+        x=$((mon_x + gap * 2 + half_width))
+        y=$((work_y + gap))
+        w=$half_width
+        h=$half_height
+        ;;
+    bottomleft)
+        x=$((mon_x + gap))
+        y=$((work_y + gap * 2 + half_height))
+        w=$half_width
+        h=$half_height
+        ;;
+    bottomright)
+        x=$((mon_x + gap * 2 + half_width))
+        y=$((work_y + gap * 2 + half_height))
+        w=$half_width
+        h=$half_height
+        ;;
+    center)
+        w=$((mon_width * 2 / 3))
+        h=$((work_height * 2 / 3))
+        x=$((mon_x + (mon_width - w) / 2))
+        y=$((work_y + (work_height - h) / 2))
+        ;;
+    maximize)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$full_width
+        h=$full_height
+        ;;
+    leftthird)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$third_width
+        h=$full_height
+        ;;
+    centerthird)
+        x=$((mon_x + gap * 2 + third_width))
+        y=$((work_y + gap))
+        w=$third_width
+        h=$full_height
+        ;;
+    rightthird)
+        x=$((mon_x + gap * 3 + third_width * 2))
+        y=$((work_y + gap))
+        w=$third_width
+        h=$full_height
+        ;;
+    left2third)
+        x=$((mon_x + gap))
+        y=$((work_y + gap))
+        w=$two_third_width
+        h=$full_height
+        ;;
+    right2third)
+        x=$((mon_x + mon_width - gap - two_third_width))
+        y=$((work_y + gap))
+        w=$two_third_width
+        h=$full_height
+        ;;
+    restore)
+        # Toggle back to tiling
+        hyprctl dispatch settiled
+        exit 0
+        ;;
+    *)
+        echo "Unknown position: $position"
+        echo "Valid: left, right, top, bottom, topleft, topright, bottomleft, bottomright, center, maximize, restore"
+        exit 1
+        ;;
+esac
+
+# Move and resize
+hyprctl dispatch moveactive exact "$x" "$y"
+hyprctl dispatch resizeactive exact "$w" "$h"

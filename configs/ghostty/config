@@ -29,6 +29,7 @@ keybind = super+c=copy_to_clipboard
 keybind = super+v=paste_from_clipboard
 keybind = super+x=copy_to_clipboard
 keybind = super+shift+d=new_split:down
+keybind = alt+shift+d=new_split:down
 keybind = super+backspace=text:\x17
 keybind = super+control+shift+alt+arrow_down=resize_split:down,100
 keybind = super+control+shift+alt+arrow_up=resize_split:up,100

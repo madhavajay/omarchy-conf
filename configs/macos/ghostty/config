@@ -1,0 +1,22 @@
+# macOS Ghostty config
+
+# Include shared config
+config-file = ?~/.config/omarchy/ghostty/common.conf
+
+# Font (macOS)
+font-family = "JetBrainsMono Nerd Font"
+font-style = Regular
+font-size = 13
+
+# Window (macOS specific)
+window-padding-x = 10
+window-padding-y = 10
+macos-titlebar-style = hidden
+
+# macOS-specific keybindings
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+option+arrow_left=goto_split:left
+keybind = super+option+arrow_right=goto_split:right
+keybind = super+option+arrow_up=goto_split:top
+keybind = super+option+arrow_down=goto_split:bottom

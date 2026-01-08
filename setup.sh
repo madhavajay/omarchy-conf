@@ -22,7 +22,12 @@ warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-# 1. Install keyd if not present
+# 1. Install required packages
+if ! command -v zsh &> /dev/null; then
+    info "Installing zsh..."
+    sudo pacman -S --noconfirm zsh
+fi
+
 if ! command -v keyd &> /dev/null; then
     info "Installing keyd..."
     sudo pacman -S --noconfirm keyd
@@ -57,7 +62,32 @@ cp "$SCRIPT_DIR/configs/omarchy/bin/omarchy-hyprland-snap" ~/.local/share/chezmo
 chezmoi apply
 info "chezmoi dotfiles applied"
 
-# 4. Reload hyprland if running
+# 4. Configure zsh
+info "Configuring zsh..."
+ZSHRC="$HOME/.zshrc"
+GHOSTTY_SOURCE='source ~/.config/omarchy/zsh/ghostty-colors.zsh'
+
+if [[ ! -f "$ZSHRC" ]]; then
+    echo "# Omarchy zsh config" > "$ZSHRC"
+fi
+
+if ! grep -qF "$GHOSTTY_SOURCE" "$ZSHRC" 2>/dev/null; then
+    echo "" >> "$ZSHRC"
+    echo "# Ghostty random background colors" >> "$ZSHRC"
+    echo "$GHOSTTY_SOURCE" >> "$ZSHRC"
+    info "Added ghostty-colors.zsh to .zshrc"
+else
+    info "ghostty-colors.zsh already in .zshrc"
+fi
+
+# Change default shell to zsh if not already
+if [[ "$SHELL" != *"zsh"* ]]; then
+    info "Changing default shell to zsh..."
+    chsh -s "$(which zsh)"
+    info "Default shell changed to zsh (takes effect on next login)"
+fi
+
+# 5. Reload hyprland if running
 if pgrep -x "Hyprland" > /dev/null; then
     info "Reloading Hyprland..."
     hyprctl reload
